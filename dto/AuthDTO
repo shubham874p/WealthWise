@@ -1,0 +1,15 @@
+package com.wealth_wise.DTO;
+
+import lombok.*;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
+@Setter
+public class AuthDTO {
+    private String email;
+    private String password;
+    private String token;
+}
