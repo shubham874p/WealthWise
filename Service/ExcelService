@@ -1,0 +1,75 @@
+package com.wealth_wise.service;
+
+import com.wealth_wise.DTO.ExpenseDTO;
+import com.wealth_wise.DTO.IncomeDTO;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.stream.IntStream;
+
+@Service
+public class ExcelService {
+
+    public void writeIncomesToExcel(OutputStream os, List<IncomeDTO> incomes) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Incomes");
+            createHeader(sheet);
+            IntStream.range(0, incomes.size())
+                    .forEach(i -> populateIncomeRow(sheet, incomes.get(i), i + 1));
+            autoSizeColumns(sheet);
+            workbook.write(os);
+        }
+    }
+
+    public void writeExpensesToExcel(OutputStream os, List<ExpenseDTO> expenses) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Expenses");
+            createHeader(sheet);
+            IntStream.range(0, expenses.size())
+                    .forEach(i -> populateExpenseRow(sheet, expenses.get(i), i + 1));
+            autoSizeColumns(sheet);
+            workbook.write(os);
+        }
+    }
+
+    private void createHeader(Sheet sheet) {
+        Row header = sheet.createRow(0);
+        header.createCell(0).setCellValue("S.No");
+        header.createCell(1).setCellValue("Name");
+        header.createCell(2).setCellValue("Category");
+        header.createCell(3).setCellValue("Amount");
+        header.createCell(4).setCellValue("Date");
+    }
+
+    private void populateIncomeRow(Sheet sheet, IncomeDTO income, int serial) {
+        Row row = sheet.createRow(serial);
+        row.createCell(0).setCellValue(serial);
+        row.createCell(1).setCellValue(safeString(income.getName()));
+        row.createCell(2).setCellValue(safeString(income.getCategoryName()));
+        row.createCell(3).setCellValue(income.getAmount() != null ? income.getAmount().doubleValue() : 0.0);
+        row.createCell(4).setCellValue(safeString(income.getDate() != null ? income.getDate().toString() : null));
+    }
+
+    private void populateExpenseRow(Sheet sheet, ExpenseDTO expense, int serial) {
+        Row row = sheet.createRow(serial);
+        row.createCell(0).setCellValue(serial);
+        row.createCell(1).setCellValue(safeString(expense.getName()));
+        row.createCell(2).setCellValue(safeString(expense.getCategoryName()));
+        row.createCell(3).setCellValue(expense.getAmount() != null ? expense.getAmount().doubleValue() : 0.0);
+        row.createCell(4).setCellValue(safeString(expense.getDate() != null ? expense.getDate().toString() : null));
+    }
+
+    private void autoSizeColumns(Sheet sheet) {
+        for (int i = 0; i < 5; i++) {
+            sheet.autoSizeColumn(i);
+        }
+    }
+
+    private String safeString(String value) {
+        return value != null ? value : "N/A";
+    }
+}
